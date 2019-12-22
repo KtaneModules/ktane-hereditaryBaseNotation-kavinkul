@@ -400,7 +400,7 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
     }
     //Twitch Plays
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = "Use !{0} submit 46AD to clear the screen and submit 46AD as an answer. Use !{0} type 46AD to type in 46AD without pressing the clear button. Use !{0} submit will submit anything currently in the top display. Use !{0} clear to clear the top display. The number must be between 0 to 9 or A to F.";
+    private readonly string TwitchHelpMessage = "Use !{0} submit 46AD to clear the screen and submit 46AD as an answer. Use !{0} type 46AD to type in 46AD without pressing the clear or submit button. The digit string must have a length between 1 to 13. Use !{0} submit will submit anything currently in the top display. Use !{0} clear to clear the top display. The number must be between 0 to 9 or A to F.";
     #pragma warning restore 414
 
     public IEnumerator TwitchHandleForcedSolve()
@@ -411,7 +411,7 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
             answerString = answerString.ToUpperInvariant();
             yield return new WaitUntil(() => !animatingFlag[16]);
             keypad[16].OnInteract();
-            yield return new WaitForSeconds(0.01F);
+            yield return new WaitForSeconds(0.1F);
             for (int index = 0; index < answerString.Length; index++)
             {
                 int buttonToPress;
@@ -425,11 +425,11 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
                 }
                 yield return new WaitUntil(() => !animatingFlag[buttonToPress]);
                 keypad[buttonToPress].OnInteract();
-                yield return new WaitForSeconds(0.01F);
+                yield return new WaitForSeconds(0.1F);
             }
             yield return new WaitUntil(() => !animatingFlag[17]);
             keypad[17].OnInteract();
-            yield return new WaitForSeconds(0.01F);
+            yield return new WaitForSeconds(0.1F);
         }
     }
 
@@ -452,7 +452,7 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
                     yield return null;
                     yield return new WaitUntil(() => !animatingFlag[16]);
                     keypad[16].OnInteract();
-                    yield return new WaitForSeconds(0.01F);
+                    yield return new WaitForSeconds(0.1F);
                     for (int index = 0; index < parameters[1].Length; index++)
                     {
                         int buttonToPress;
@@ -466,10 +466,15 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
                         }
                         yield return new WaitUntil(() => !animatingFlag[buttonToPress]);
                         keypad[buttonToPress].OnInteract();
-                        yield return new WaitForSeconds(0.01F);
+                        yield return new WaitForSeconds(0.1F);
                     }
                     yield return new WaitUntil(() => !animatingFlag[17]);
                     keypad[17].OnInteract();
+                }
+                else
+                {
+                    yield return "sendtochaterror Unexpected characters or string length detected. Please only enter any number from 0 to 9 or letter from A to F. The string length must be between 1 to 13.";
+                    yield break;
                 }
             }
             else if (parameters.Length == 1)
@@ -477,11 +482,11 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
                 yield return null;
                 yield return new WaitUntil(() => !animatingFlag[17]);
                 keypad[17].OnInteract();
-                yield return new WaitForSeconds(0.01F);
+                yield return new WaitForSeconds(0.1F);
             }
             else
             {
-                yield return "sendtochaterror Invalid command: submit command requires 0 to 1 arguments after it. If it is followed by 1 argument, then that argument must be a string of digits 0 to 9 and letters A to F without any space in between.";
+                yield return "sendtochaterror Invalid command: submit command requires 0 to 1 arguments after it. If it is followed by 1 argument, then that argument must be a string of digits 0 to 9 and letters A to F without any space in between. This string length must be between 1 to 13.";
                 yield break;
             }
         }
@@ -504,12 +509,12 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
                     }
                     yield return new WaitUntil(() => !animatingFlag[buttonToPress]);
                     keypad[buttonToPress].OnInteract();
-                    yield return new WaitForSeconds(0.01F);
+                    yield return new WaitForSeconds(0.1F);
                 }
             }
             else
             {
-                yield return "sendtochaterror Invalid command: type command requires exactly 1 argument after it. That argument must be a string of digits 0 to 9 and letters A to F without any space in between.";
+                yield return "sendtochaterror Invalid command: type command requires exactly 1 argument after it. That argument must be a string of digits 0 to 9 and letters A to F without any space in between. This string length must be between 1 to 13.";
                 yield break;
             }
         }
@@ -518,7 +523,7 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
             yield return null;
             yield return new WaitUntil(() => !animatingFlag[16]);
             keypad[16].OnInteract();
-            yield return new WaitForSeconds(0.01F);
+            yield return new WaitForSeconds(0.1F);
         }
         else
         {
