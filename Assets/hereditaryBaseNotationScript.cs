@@ -62,7 +62,7 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
             var j = index;
             keypad[j].OnInteract += delegate () { pressButton(j); return false; };
         }
-	}
+    }
 	
     private void pressButton(int index)
     {
