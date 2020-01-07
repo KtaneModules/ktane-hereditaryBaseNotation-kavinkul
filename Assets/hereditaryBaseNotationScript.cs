@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,7 +62,7 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
             var j = index;
             keypad[j].OnInteract += delegate () { pressButton(j); return false; };
         }
-    }
+	}
 	
     private void pressButton(int index)
     {
@@ -441,7 +441,7 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
             yield break;
         }
  
-        string[] parameters = command.Split(' ');
+        string[] parameters = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (Regex.IsMatch(parameters[0], @"^\s*submit\s*", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             if (parameters.Length == 2)
