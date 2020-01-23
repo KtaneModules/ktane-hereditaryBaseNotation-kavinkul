@@ -7,8 +7,8 @@ using System.Text.RegularExpressions;
 using Rnd = UnityEngine.Random;
 using KModkit;
 
-public class hereditaryBaseNotationScript : MonoBehaviour {
-
+public class hereditaryBaseNotationScript : MonoBehaviour 
+{
     public KMAudio audio;
     public KMBombModule module;
     public KMBombInfo info;
@@ -22,6 +22,8 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
     private string answerString = "";
     private string bottomScreenText = "";
     private string topScreenText = "";
+    private List<string> givenHereditary = new List<string>();
+    private List<string> incrementedHereditary = new List<string>();
     private bool moduleActivated;
     private bool[] animatingFlag = new bool[18];
     private bool[] statementsFlag = new bool[18];
@@ -42,7 +44,8 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
     private bool moduleSolved;
 
     // Use this for initialization
-    private void Start () {
+    private void Start () 
+    {
         moduleActivated = false;
         moduleSolved = false;
         for (int index = 0; index < animatingFlag.Length; index++)
@@ -167,8 +170,16 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
         }
         bottomScreenText = numberToBaseNString(baseN, initialNumber);
         Debug.LogFormat("[Hereditary Base Notation #{0}] The initial number is {1}, generated in base-{2} as {3}.", moduleId, initialNumber, baseN, bottomScreenText);
+        generateHereditaryFormulaWrapper(baseN, initialNumber, givenHereditary);
+        Debug.LogFormat("[Hereditary Base Notation #{0}] The initial number in hereditary base-{1} is:", moduleId, baseN);
+        for (int i = givenHereditary.Count() - 1; i >= 0; i--)
+            Debug.LogFormat("{0}", givenHereditary[i]);
         incrementedNumber = hereditary_Increment(baseN, initialNumber);
         Debug.LogFormat("[Hereditary Base Notation #{0}] The number after applying incrementing the base and subtract 1, in base-10, is {1}.", moduleId, incrementedNumber);
+        generateHereditaryFormulaWrapper(baseN + 1, incrementedNumber, incrementedHereditary);
+        Debug.LogFormat("[Hereditary Base Notation #{0}] The number after applying incrementing the base and subtract 1, in hereditary base-{1}, is:", moduleId, baseN + 1);
+        for (int i = incrementedHereditary.Count() - 1; i >= 0; i--)
+            Debug.LogFormat("{0}", incrementedHereditary[i]);
         baseK = generateAnswerBase();
         Debug.LogFormat("[Hereditary Base Notation #{0}] The target base value K is {1}.", moduleId, baseK);
         if ((baseN % 2 == 0 && baseK % 2 == 0) || (baseN % 2 == 1 && baseK % 2 == 1))
@@ -313,6 +324,61 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
         return result;
     }
 
+    // These variables are to be used with generateHereditaryFormulaWrapper function
+    int currentIndex;
+    int currentLevel;
+    //Wrapper function  to reinitialize the currentIndex to 0 
+    private void generateHereditaryFormulaWrapper(int baseN, int base10_num, List<string> result)
+    {
+        currentIndex = 0;
+        currentLevel = 0;
+        generateHereditaryFormula(baseN, base10_num, result);
+        Debug.LogFormat("[Hereditary Base Notation #{0}] Line counts: {1}", moduleId, result.Count());
+    }
+
+    private void generateHereditaryFormula(int baseN, int base10_num, List<string> result)
+    {
+        int nth_digit = 0;
+        if ( result.Count() < currentLevel + 1)
+        {
+            result.Add(string.Empty);
+            for (int i = 0; i < currentIndex; i++)
+                result[currentLevel] += " ";
+        }
+        while (base10_num > 0)
+        {
+            int remainder = base10_num % baseN;
+            if (remainder != 0)
+            {
+                if (nth_digit == 0)
+                {
+                    result[currentLevel] = remainder.ToString() + result[currentLevel];
+                    currentIndex++;
+                }
+                else
+                {
+                    currentLevel++;
+                    generateHereditaryFormula(baseN, nth_digit, result);
+                    result[currentLevel] = string.Format("{0} \u00D7 {1}{2}", remainder, baseN, result[currentLevel]);
+                    currentIndex += (remainder.ToString().Length + baseN.ToString().Length + 3);
+                }
+                if (base10_num / baseN > 0)
+                {
+                    result[currentLevel] = " + " + result[currentLevel];
+                    currentIndex += 3;
+                }
+            }
+            for (int i = 0; i < result.Count(); i++)
+            {
+                while (result[i].Length < currentIndex)
+                    result[i] = " " + result[i];
+            }
+            nth_digit++;
+            base10_num = base10_num / baseN;
+        }
+        currentLevel--;
+    }
+
     private int hereditary_Increment(int baseN, int base10_num)
     {
         int nth_digit = 0;
@@ -400,7 +466,7 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
     }
     //Twitch Plays
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = "Use !{0} submit 46AD to clear the screen and submit 46AD as an answer. Use !{0} type 46AD to type in 46AD without pressing the clear or submit button. The digit string must have a length between 1 to 13. Use !{0} submit will submit anything currently in the top display. Use !{0} clear to clear the top display. The number must be between 0 to 9 or A to F.";
+    private readonly string TwitchHelpMessage = @"Use !{0} submit 46AD to clear the screen and submit 46AD as an answer. Use !{0} type 46AD to type in 46AD without pressing the clear or submit button. The digit string must have a length between 1 to 13. Use !{0} submit will submit anything currently in the top display. Use !{0} clear to clear the top display. The number must be between 0 to 9 or A to F.";
     #pragma warning restore 414
 
     public IEnumerator TwitchHandleForcedSolve()
@@ -448,9 +514,10 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
             {
                 if (Regex.IsMatch(parameters[1], @"^\s*[0-9|A-F]{1,13}\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
                 {
+	                yield return null;
                     parameters[1] = parameters[1].ToUpperInvariant();
-                    yield return null;
-                    yield return new WaitUntil(() => !animatingFlag[16]);
+                    while (animatingFlag[16])
+                        yield return new WaitForSeconds(0.1F);
                     keypad[16].OnInteract();
                     yield return new WaitForSeconds(0.1F);
                     for (int index = 0; index < parameters[1].Length; index++)
@@ -464,12 +531,15 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
                         {
                             buttonToPress = parameters[1][index] - 'A' + 10;
                         }
-                        yield return new WaitUntil(() => !animatingFlag[buttonToPress]);
+                        while (animatingFlag[buttonToPress])
+                            yield return new WaitForSeconds(0.1F);
                         keypad[buttonToPress].OnInteract();
                         yield return new WaitForSeconds(0.1F);
                     }
-                    yield return new WaitUntil(() => !animatingFlag[17]);
+                    while (animatingFlag[17])
+                        yield return new WaitForSeconds(0.1F);
                     keypad[17].OnInteract();
+                    yield return new WaitForSeconds(0.1F);
                 }
                 else
                 {
@@ -479,8 +549,9 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
             }
             else if (parameters.Length == 1)
             {
-                yield return null;
-                yield return new WaitUntil(() => !animatingFlag[17]);
+	            yield return null;
+                while (animatingFlag[17])
+                    yield return new WaitForSeconds(0.1F);
                 keypad[17].OnInteract();
                 yield return new WaitForSeconds(0.1F);
             }
@@ -494,8 +565,8 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
         {
             if (Regex.IsMatch(parameters[1], @"^\s*[0-9|A-F]{1,13}\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
+	            yield return null;
                 parameters[1] = parameters[1].ToUpperInvariant();
-                yield return null;
                 for (int index = 0; index < parameters[1].Length; index++)
                 {
                     int buttonToPress;
@@ -507,7 +578,8 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
                     {
                         buttonToPress = parameters[1][index] - 'A' + 10;
                     }
-                    yield return new WaitUntil(() => !animatingFlag[buttonToPress]);
+                    while (animatingFlag[buttonToPress])
+                        yield return new WaitForSeconds(0.1F);
                     keypad[buttonToPress].OnInteract();
                     yield return new WaitForSeconds(0.1F);
                 }
@@ -521,7 +593,8 @@ public class hereditaryBaseNotationScript : MonoBehaviour {
         else if (Regex.IsMatch(parameters[0], @"^\s*clear\s*", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) && parameters.Length == 1)
         {
             yield return null;
-            yield return new WaitUntil(() => !animatingFlag[16]);
+            while (animatingFlag[16])
+                yield return new WaitForSeconds(0.1F);
             keypad[16].OnInteract();
             yield return new WaitForSeconds(0.1F);
         }
