@@ -302,6 +302,14 @@ Prefab:
       propertyPath: m_Name
       value: Hereditary Base Notation
       objectReference: {fileID: 0}
+    - target: {fileID: 1972137893265958, guid: 24602da9ea2de6c4e9e28b1774b2d770, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1972137893265958, guid: 24602da9ea2de6c4e9e28b1774b2d770, type: 2}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 24602da9ea2de6c4e9e28b1774b2d770, type: 2}
   m_IsPrefabParent: 0

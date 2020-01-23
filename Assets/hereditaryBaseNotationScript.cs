@@ -24,6 +24,8 @@ public class hereditaryBaseNotationScript : MonoBehaviour
     private string topScreenText = "";
     private List<string> givenHereditary = new List<string>();
     private List<string> incrementedHereditary = new List<string>();
+    private string givenHereditaryString = ""; //To be used with LFA
+    private string incrementedHereditaryString = ""; //To be used with LFA
     private bool moduleActivated;
     private bool[] animatingFlag = new bool[18];
     private bool[] statementsFlag = new bool[18];
@@ -170,14 +172,20 @@ public class hereditaryBaseNotationScript : MonoBehaviour
         }
         bottomScreenText = numberToBaseNString(baseN, initialNumber);
         Debug.LogFormat("[Hereditary Base Notation #{0}] The initial number is {1}, generated in base-{2} as {3}.", moduleId, initialNumber, baseN, bottomScreenText);
-        generateHereditaryFormulaWrapper(baseN, initialNumber, givenHereditary);
+        givenHereditaryString = generateHereditaryFormulaWrapper(baseN, initialNumber, givenHereditary);
         Debug.LogFormat("[Hereditary Base Notation #{0}] The initial number in hereditary base-{1} is:", moduleId, baseN);
+        Debug.LogFormat("<Hereditary Base Notation #{0}> (The following line is used for Logfile Analyzer)", moduleId);
+        Debug.LogFormat("{0}", givenHereditaryString);
+        Debug.LogFormat("<Hereditary Base Notation #{0}> (The subsequent lines are to be viewed in text editor)", moduleId);
         for (int i = givenHereditary.Count() - 1; i >= 0; i--)
             Debug.LogFormat("{0}", givenHereditary[i]);
         incrementedNumber = hereditary_Increment(baseN, initialNumber);
-        Debug.LogFormat("[Hereditary Base Notation #{0}] The number after applying incrementing the base and subtract 1, in base-10, is {1}.", moduleId, incrementedNumber);
-        generateHereditaryFormulaWrapper(baseN + 1, incrementedNumber, incrementedHereditary);
-        Debug.LogFormat("[Hereditary Base Notation #{0}] The number after applying incrementing the base and subtract 1, in hereditary base-{1}, is:", moduleId, baseN + 1);
+        Debug.LogFormat("[Hereditary Base Notation #{0}] The number after incrementing its base and subtracting 1, in base-10, is {1}.", moduleId, incrementedNumber);
+        incrementedHereditaryString = generateHereditaryFormulaWrapper(baseN + 1, incrementedNumber, incrementedHereditary);
+        Debug.LogFormat("[Hereditary Base Notation #{0}] The number after incrementing its base and subtracting 1, in hereditary base-{1}, is:", moduleId, baseN + 1);
+        Debug.LogFormat("<Hereditary Base Notation #{0}> (The following line is used for Logfile Analyzer)", moduleId);
+        Debug.LogFormat("{0}", incrementedHereditaryString);
+        Debug.LogFormat("<Hereditary Base Notation #{0}> (The subsequent lines are to be viewed in text editor)", moduleId);
         for (int i = incrementedHereditary.Count() - 1; i >= 0; i--)
             Debug.LogFormat("{0}", incrementedHereditary[i]);
         baseK = generateAnswerBase();
@@ -328,16 +336,16 @@ public class hereditaryBaseNotationScript : MonoBehaviour
     int currentIndex;
     int currentLevel;
     //Wrapper function  to reinitialize the currentIndex to 0 
-    private void generateHereditaryFormulaWrapper(int baseN, int base10_num, List<string> result)
+    private string generateHereditaryFormulaWrapper(int baseN, int base10_num, List<string> result)
     {
         currentIndex = 0;
         currentLevel = 0;
-        generateHereditaryFormula(baseN, base10_num, result);
-        Debug.LogFormat("[Hereditary Base Notation #{0}] Line counts: {1}", moduleId, result.Count());
+        return generateHereditaryFormula(baseN, base10_num, result);
     }
 
-    private void generateHereditaryFormula(int baseN, int base10_num, List<string> result)
+    private string generateHereditaryFormula(int baseN, int base10_num, List<string> result)
     {
+        string resultString = "";
         int nth_digit = 0;
         if ( result.Count() < currentLevel + 1)
         {
@@ -353,18 +361,23 @@ public class hereditaryBaseNotationScript : MonoBehaviour
                 if (nth_digit == 0)
                 {
                     result[currentLevel] = remainder.ToString() + result[currentLevel];
+                    resultString = remainder.ToString() + resultString;
                     currentIndex++;
                 }
                 else
                 {
                     currentLevel++;
-                    generateHereditaryFormula(baseN, nth_digit, result);
+                    resultString = "}" + resultString;
+                    resultString = generateHereditaryFormula(baseN, nth_digit, result) + resultString;
+                    resultString = "{" + resultString;
                     result[currentLevel] = string.Format("{0} \u00D7 {1}{2}", remainder, baseN, result[currentLevel]);
+                    resultString = string.Format("{0} \u00D7 {1}{2}", remainder, baseN, resultString);
                     currentIndex += (remainder.ToString().Length + baseN.ToString().Length + 3);
                 }
                 if (base10_num / baseN > 0)
                 {
                     result[currentLevel] = " + " + result[currentLevel];
+                    resultString = " + " + resultString;
                     currentIndex += 3;
                 }
             }
@@ -377,6 +390,7 @@ public class hereditaryBaseNotationScript : MonoBehaviour
             base10_num = base10_num / baseN;
         }
         currentLevel--;
+        return resultString;
     }
 
     private int hereditary_Increment(int baseN, int base10_num)
