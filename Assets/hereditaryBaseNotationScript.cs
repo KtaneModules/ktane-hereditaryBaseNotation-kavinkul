@@ -71,41 +71,39 @@ public class hereditaryBaseNotationScript : MonoBehaviour
 	
     private void pressButton(int index)
     {
-        if (!moduleSolved && moduleActivated && !animatingFlag[index])
+        if (animatingFlag[index]) return;
+        StartCoroutine(keyAnimation(index));
+        if (moduleSolved || !moduleActivated) return;
+        if (index >= 0 && index <= 15)
         {
-            keypad[index].AddInteractionPunch(0.125f);
-            StartCoroutine(keyAnimation(index));
-            if (index >= 0 && index <= 15)
+            if (topScreenText.Length < 13)
             {
-                if (topScreenText.Length < 13)
-                {
-                    topScreenText = topScreenText + digits[index];
-                    displayText[0].GetComponent<TextMesh>().text = topScreenText;
-                }
-            }
-            else if (index == 16)
-            {
-                topScreenText = "";
+                topScreenText = topScreenText + digits[index];
                 displayText[0].GetComponent<TextMesh>().text = topScreenText;
             }
+        }
+        else if (index == 16)
+        {
+            topScreenText = "";
+            displayText[0].GetComponent<TextMesh>().text = topScreenText;
+        }
+        else
+        {
+            Debug.LogFormat("[Hereditary Base Notation #{0}] Submitted {1}.", moduleId, topScreenText);
+            if (topScreenText == answerString)
+            {
+                Debug.LogFormat("[Hereditary Base Notation #{0}] Correct! Module solved.", moduleId);
+                moduleSolved = true;
+                victory_Screen();
+                audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
+                module.HandlePass();
+        }
             else
             {
-                Debug.LogFormat("[Hereditary Base Notation #{0}] Submitted {1}.", moduleId, topScreenText);
-                if (topScreenText == answerString)
-                {
-                    Debug.LogFormat("[Hereditary Base Notation #{0}] Correct! Module solved.", moduleId);
-                    moduleSolved = true;
-                    victory_Screen();
-                    audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
-                    module.HandlePass();
-                }
-                else
-                {
-                    Debug.LogFormat("[Hereditary Base Notation #{0}] Incorrect! Issuing a strike.", moduleId);
-                    topScreenText = "";
-                    displayText[0].GetComponent<TextMesh>().text = topScreenText;
-                    module.HandleStrike();
-                }
+                Debug.LogFormat("[Hereditary Base Notation #{0}] Incorrect! Issuing a strike.", moduleId);
+                topScreenText = "";
+                displayText[0].GetComponent<TextMesh>().text = topScreenText;
+                module.HandleStrike();
             }
         }
     }
@@ -113,16 +111,17 @@ public class hereditaryBaseNotationScript : MonoBehaviour
     private IEnumerator keyAnimation(int index)
     {
         animatingFlag[index] = true;
+        keypad[index].AddInteractionPunch(0.125f);
         audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 5; i++)
         {
-            keypadObject[index].transform.localPosition += new Vector3(0, -0.00075F, 0);
-            yield return new WaitForSeconds(0.001F);
+            keypadObject[index].transform.localPosition += new Vector3(0, -0.0015F, 0);
+            yield return new WaitForSeconds(0.005F);
         }
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 5; i++)
         {
-            keypadObject[index].transform.localPosition += new Vector3(0, +0.00075F, 0);
-            yield return new WaitForSeconds(0.001F);
+            keypadObject[index].transform.localPosition += new Vector3(0, +0.0015F, 0);
+            yield return new WaitForSeconds(0.005F);
         }
         animatingFlag[index] = false;
     }
@@ -485,42 +484,15 @@ public class hereditaryBaseNotationScript : MonoBehaviour
 
     public IEnumerator TwitchHandleForcedSolve()
     {
-        yield return new WaitUntil(() => moduleActivated);
-        while (!moduleSolved)
-        {
-            answerString = answerString.ToUpperInvariant();
-            yield return new WaitUntil(() => !animatingFlag[16]);
-            keypad[16].OnInteract();
-            yield return new WaitForSeconds(0.1F);
-            for (int index = 0; index < answerString.Length; index++)
-            {
-                int buttonToPress;
-                if (answerString[index] >= '0' || answerString[index] <= '9')
-                {
-                    buttonToPress = answerString[index] - '0';
-                }
-                else
-                {
-                    buttonToPress = answerString[index] - 'A' + 10;
-                }
-                yield return new WaitUntil(() => !animatingFlag[buttonToPress]);
-                keypad[buttonToPress].OnInteract();
-                yield return new WaitForSeconds(0.1F);
-            }
-            yield return new WaitUntil(() => !animatingFlag[17]);
-            keypad[17].OnInteract();
-            yield return new WaitForSeconds(0.1F);
-        }
+        while (!moduleActivated)
+            yield return true;
+        answerString = answerString.ToUpperInvariant();
+        yield return ProcessTwitchCommand("clear");
+        yield return ProcessTwitchCommand("submit " + answerString);
     }
 
     public IEnumerator ProcessTwitchCommand(string command)
     {
-        if (!moduleActivated)
-        {
-            yield return "sendtochaterror The module is not yet ready to be interacted with. Please wait until the module activates.";
-            yield break;
-        }
- 
         string[] parameters = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (Regex.IsMatch(parameters[0], @"^\s*submit\s*", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
