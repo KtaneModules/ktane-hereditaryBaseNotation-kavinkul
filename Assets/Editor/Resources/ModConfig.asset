@@ -25,6 +25,6 @@ MonoBehaviour:
 
 
     Manual: https://ktane.timwi.de/HTML/Hereditary%20Base%20Notation.html'
-  version: 1.6
+  version: 1.7
   outputFolder: A:\Steam\steamapps\common\Keep Talking and Nobody Explodes\mods
   previewImage: {fileID: 2800000, guid: 39d7c65e55bd52b44b75a41fbe509732, type: 3}
